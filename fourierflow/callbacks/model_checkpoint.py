@@ -22,10 +22,7 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_warn
 
 _PATH = Union[str, Path, PathLike]
 
-try:
-    from pytorch_lightning.callbacks import Callback
-except ModuleNotFoundError:
-    from lightning.pytorch.callbacks import Callback
+from .callback import Callback
 
 
 class JAXModelCheckpoint(Callback):
