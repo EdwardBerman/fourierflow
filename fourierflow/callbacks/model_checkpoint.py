@@ -5,7 +5,12 @@ from typing import Optional
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.utilities.logger import _name, _version
+try:
+    # older PyTorch Lightning
+    from pytorch_lightning.utilities.logger import _name, _version
+except ModuleNotFoundError:
+    # newer Lightning
+    from lightning.pytorch.loggers.utilities import _name, _version
 from pytorch_lightning.utilities.rank_zero import rank_zero_warn
 from pytorch_lightning.utilities.types import _PATH
 
