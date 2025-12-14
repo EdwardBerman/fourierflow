@@ -105,26 +105,18 @@ class CustomModelCheckpoint(ModelCheckpoint):
         """
         if self.dirpath is not None:
             return  # short circuit
+        save_dir = trainer.default_root_dir
+        loggers = getattr(trainer, "loggers", None)
 
-        # TODO: Remove weights_save_path logic here in v1.8
-        if trainer.loggers:
-            if trainer._weights_save_path_internal != trainer.default_root_dir:
-                # the user has changed weights_save_path, it overrides anything
-                save_dir = trainer._weights_save_path_internal
-            elif len(trainer.loggers) == 1:
-                save_dir = trainer.logger.save_dir or trainer.default_root_dir
-            else:
-                save_dir = trainer.default_root_dir
+        # If there is exactly one logger and it has a save_dir, prefer it
+        if loggers and len(loggers) == 1:
+            save_dir = loggers[0].save_dir or trainer.default_root_dir
 
-            name = _name(trainer.loggers)
-            version = _version(trainer.loggers)
-            version = version if isinstance(
-                version, str) else f"version_{version}"
-            ckpt_path = os.path.join(save_dir, "checkpoints", version)
-        else:
-            ckpt_path = os.path.join(
-                trainer._weights_save_path_internal, "checkpoints")
+        name = _name(loggers)      # keep your existing helpers
+        version = _version(loggers)
+        version = version if isinstance(version, str) else f"version_{version}"
 
+        ckpt_path = os.path.join(save_dir, "checkpoints", version)
         ckpt_path = trainer.strategy.broadcast(ckpt_path)
 
         self.dirpath = ckpt_path
