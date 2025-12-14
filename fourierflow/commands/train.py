@@ -14,7 +14,10 @@ import wandb
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.plugins import DDPPlugin
+try:
+    from pytorch_lightning.strategies import DDPStrategy
+except Exception:
+    from lightning.pytorch.strategies import DDPStrategy
 from typer import Argument, Typer
 
 from fourierflow.utils import (delete_old_results, get_experiment_id,
@@ -80,8 +83,19 @@ def main(config_path: Path,
 
     # Initialize the main trainer.
     callbacks = [instantiate(p) for p in config.get('callbacks', [])]
-    multi_gpus = config.trainer.get('gpus', 0) > 1
-    plugins = DDPPlugin(find_unused_parameters=False) if multi_gpus else None
+    
+    #multi_gpus = config.trainer.get('gpus', 0) > 1
+    # plugins = DDPPlugin(find_unused_parameters=False) if multi_gpus else None
+    # Support both old ("gpus") and new ("devices") config styles
+    gpus = config.trainer.get('gpus', 0)
+    devices = config.trainer.get('devices', gpus)
+
+    multi_gpus = (isinstance(devices, int) and devices > 1) or (
+        isinstance(devices, (list, tuple)) and len(devices) > 1
+    )
+
+    strategy = DDPStrategy(find_unused_parameters=False) if multi_gpus else None
+
 
     # Strange bug: We need to check if cuda is availabe first; otherwise,
     # sometimes lightning's CUDAAccelerator.is_available() returns false :-/
@@ -120,7 +134,8 @@ def main(config_path: Path,
     # Tuning only has an effect when either auto_scale_batch_size or
     # auto_lr_find is set to true.
     trainer.tune(routine, datamodule=builder)
-    trainer.fit(routine, datamodule=builder)
+    #trainer.fit(routine, datamodule=builder)
+    trainer.fit(routine, datamodule=builder, ckpt_path=str(chkpt_path) if chkpt_path else None)
 
     # Load best checkpoint before testing.
     chkpt_dir = Path(config_dir) / 'checkpoints'
