@@ -75,6 +75,9 @@ def main(config_path: Path,
     loader = builder.test_dataloader()
     with torch.no_grad():
         for batch in loader:
+            out = routine.forward(batch)
+            print("type(out) =", type(out))
+            print("out =", out)
             pred = routine.forward(batch).cpu().numpy()
             out_path = Path(config_dir) / 'sample.pkl'
             with open(out_path, 'wb') as f:
