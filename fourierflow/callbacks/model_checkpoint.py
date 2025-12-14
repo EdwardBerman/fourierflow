@@ -1,7 +1,8 @@
 import os
 import pickle
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
+from os import PathLike
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -18,9 +19,8 @@ def _logger_version(logger) -> str:
     return str(v)
 
 from pytorch_lightning.utilities.rank_zero import rank_zero_warn
-from pytorch_lightning.utilities.types import _PATH
 
-
+_PATH = Union[str, Path, PathLike]
 
 from .callback import Callback
 
