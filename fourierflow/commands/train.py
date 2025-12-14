@@ -109,8 +109,12 @@ def main(config_path: Path,
     else:
         # We use Weights & Biases to track our experiments.
         # Clean cache before creating any new artifacts
-        c = wandb.wandb_sdk.wandb_artifacts.get_artifacts_cache()
-        c.cleanup(wandb.util.from_human_size("200GB"))
+        try:
+            c = wandb.wandb_sdk.wandb_artifacts.get_artifacts_cache()
+            c.cleanup(wandb.util.from_human_size("200GB"))
+        except AttributeError:
+            # New wandb versions removed this API
+            pass
 
         config.wandb.name = f"{config.wandb.group}/{trial}"
         wandb_opts = cast(dict, OmegaConf.to_container(config.wandb))
