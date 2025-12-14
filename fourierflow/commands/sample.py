@@ -75,10 +75,8 @@ def main(config_path: Path,
     loader = builder.test_dataloader()
     with torch.no_grad():
         for batch in loader:
-            out = routine.forward(batch)
-            print("type(out) =", type(out))
-            print("out =", out)
-            pred = routine.forward(batch).cpu().numpy()
+            x = batch["x"].to(routine.device)
+            pred = routine.forward(x).cpu().numpy()
             out_path = Path(config_dir) / 'sample.pkl'
             with open(out_path, 'wb') as f:
                 pickle.dump([batch, pred], f)
