@@ -131,7 +131,6 @@ def main(config_path: Path,
     trainer = Trainer(logger=logger,
                       enable_checkpointing=enable_checkpointing,
                       callbacks=callbacks, #plugins=plugins,
-                      resume_from_checkpoint=chkpt_path,
                       enable_model_summary=False,
                       **OmegaConf.to_container(config.trainer))
 
