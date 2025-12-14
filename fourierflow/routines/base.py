@@ -3,7 +3,14 @@ from typing import IO, Callable, Dict, List, Optional, Union
 import torch
 from omegaconf import OmegaConf
 from pytorch_lightning import LightningModule
-from pytorch_lightning.utilities.cloud_io import load as pl_load
+
+try:
+    # Older PL
+    from pytorch_lightning.utilities.cloud_io import load as pl_load
+except ModuleNotFoundError:
+    # Newer PL/Lightning: use the public torch loader (works for local ckpts)
+    import torch
+    pl_load = torch.load
 
 
 class Routine(LightningModule):
