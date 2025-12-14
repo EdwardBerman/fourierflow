@@ -25,8 +25,6 @@ logger = logging.getLogger(__name__)
 
 KEYS = ['vx', 'vy', 'vz']
 
--> % git show 29f956a:jax_cfd/base/initial_conditions.py | sed -n '/def wrap_velocities/,/^def /p'
-
 def wrap_velocities(v, grid):
   """Wrap velocity arrays for input into simulations."""
   return tuple(grids.AlignedArray(u, offset)
