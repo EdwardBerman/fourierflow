@@ -67,7 +67,8 @@ def delete_old_results(results_dir, force, trial, resume):
         [shutil.rmtree(p) for p in chkpt_matches]
 
     if not force and not resume and wandb_matches:
-        raise ExistingExperimentFound(f'Directory already exists: {wandb_dir}')
+        pass 
+        #raise ExistingExperimentFound(f'Directory already exists: {wandb_dir}')
 
     if not force and not resume and chkpt_matches:
         raise ExistingExperimentFound(f'Directory already exists: {chkpt_dir}')
