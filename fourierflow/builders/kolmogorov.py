@@ -3,6 +3,8 @@ import time
 from functools import partial
 from typing import Callable, Dict, List, Optional
 
+from typing import Any
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -333,7 +335,7 @@ def generate_kolmogorov(sim_grid: Grid,
                         method: str,
                         step_fn: Callable,
                         downsample_fn: Callable,
-                        seed: jax.random.KeyArray,
+                        seed: jax.random.KeyArray | Any,
                         initial_field: Optional[xr.Dataset] = None,
                         peak_wavenumber: float = 4.0,
                         max_velocity: float = 7.0,
