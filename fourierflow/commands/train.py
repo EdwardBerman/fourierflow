@@ -136,7 +136,8 @@ def main(config_path: Path,
 
     # Tuning only has an effect when either auto_scale_batch_size or
     # auto_lr_find is set to true.
-    trainer.tune(routine, datamodule=builder)
+    if hasattr(trainer, "tune"):
+        trainer.tune(routine, datamodule=builder)
     #trainer.fit(routine, datamodule=builder)
     trainer.fit(routine, datamodule=builder, ckpt_path=str(chkpt_path) if chkpt_path else None)
 
