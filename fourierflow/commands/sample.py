@@ -82,6 +82,8 @@ def main(config_path: Path,
                 pickle.dump([batch, pred], f)
             break
 
+    print(f"Sampled data saved to {out_path}")
+
 
 if __name__ == "__main__":
     app()
