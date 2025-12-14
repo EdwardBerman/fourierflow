@@ -76,7 +76,7 @@ def main(config_path: Path,
     with torch.no_grad():
         for batch in loader:
             x = batch["x"].to(next(routine.model.parameters()).device)
-            pred = routine.forward(x).cpu().numpy()
+            pred = routine.model.forward(x).cpu().numpy()
             out_path = Path(config_dir) / 'sample.pkl'
             with open(out_path, 'wb') as f:
                 pickle.dump([batch, pred], f)
