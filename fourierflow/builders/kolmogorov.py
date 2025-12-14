@@ -12,8 +12,7 @@ from jax_cfd.base.boundaries import periodic_boundary_conditions
 from jax_cfd.base.finite_differences import curl_2d
 from jax_cfd.base.funcutils import repeated, trajectory
 from jax_cfd.base.grids import Grid
-from jax_cfd.base.initial_conditions import (filtered_velocity_field,
-                                             wrap_velocities)
+from jax_cfd.base.initial_conditions import filtered_velocity_field
 from jax_cfd.base.resize import downsample_staggered_velocity
 from jax_cfd.spectral.utils import vorticity_to_velocity
 from torch.utils.data import DataLoader, Dataset
@@ -26,6 +25,12 @@ logger = logging.getLogger(__name__)
 
 KEYS = ['vx', 'vy', 'vz']
 
+-> % git show 29f956a:jax_cfd/base/initial_conditions.py | sed -n '/def wrap_velocities/,/^def /p'
+
+def wrap_velocities(v, grid):
+  """Wrap velocity arrays for input into simulations."""
+  return tuple(grids.AlignedArray(u, offset)
+               for u, offset in zip(v, grid.cell_faces))
 
 class KolmogorovBuilder(Builder):
     name = 'kolmogorov'
