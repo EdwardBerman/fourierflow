@@ -5,14 +5,22 @@ from typing import Optional
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-try:
-    # older PyTorch Lightning
-    from pytorch_lightning.utilities.logger import _name, _version
-except ModuleNotFoundError:
-    # newer Lightning
-    from lightning.pytorch.loggers.utilities import _name, _version
+
+def _logger_name(logger) -> str:
+    # Lightning loggers usually have `.name`; otherwise fall back to class name.
+    return getattr(logger, "name", None) or logger.__class__.__name__
+
+def _logger_version(logger) -> str:
+    # Lightning loggers usually have `.version`; otherwise fall back to 0.
+    v = getattr(logger, "version", None)
+    if v is None:
+        return "0"
+    return str(v)
+
 from pytorch_lightning.utilities.rank_zero import rank_zero_warn
 from pytorch_lightning.utilities.types import _PATH
+
+
 
 from .callback import Callback
 
