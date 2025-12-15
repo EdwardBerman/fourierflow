@@ -76,7 +76,11 @@ def main(config_path: Path,
     with torch.no_grad():
         for batch in loader:
             x = batch["x"].to(next(routine.model.parameters()).device)
+            # print x shape 
+            print(f"Input shape: {x.shape}")
             pred = routine.model.forward(x).cpu().numpy()
+            # print pred shape
+            print(f"Output shape: {pred.shape}")
             out_path = Path(config_dir) / 'sample.pkl'
             with open(out_path, 'wb') as f:
                 pickle.dump([batch, pred], f)
