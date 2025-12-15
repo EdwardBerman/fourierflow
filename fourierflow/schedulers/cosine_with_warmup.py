@@ -23,6 +23,7 @@ class CosineWithWarmupScheduler(LambdaLR):
                  last_epoch=-1, verbose=False):
         lr_lambda = CosineLRLambda(
             num_warmup_steps, num_training_steps, num_cycles)
+        sig = inspect.signature(LambdaLR.__init__)
         if "verbose" in sig.parameters:
             super().__init__(optimizer, lr_lambda, last_epoch=last_epoch, verbose=verbose)
         else:
