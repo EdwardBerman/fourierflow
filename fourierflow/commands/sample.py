@@ -89,7 +89,7 @@ def main(config_path: Path,
             # for each element in batch 
             for i in range(x.shape[0]):
                 V = x[i, :, :, 0].cpu().numpy().squeeze()
-                tri = Delaunay(coordinates)
+                tri = Delaunay(V)
                 F = tri.simplices
                 L = gpt.cotangent_laplacian(V, F)
                 print(f"Laplacian shape: {L.shape}")
