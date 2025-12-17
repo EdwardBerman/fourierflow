@@ -103,8 +103,9 @@ def main(config_path: Path,
                 print(f"Laplacian shape: {L.shape}")
                 numerator = V.reshape(-1).T @ L @ V.reshape(-1)
                 denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
-                numerator_trace = np.trace(numerator)
-                rq.append(numerator_trace / denominator)
+                #numerator_trace = np.trace(numerator)
+                #rq.append(numerator_trace / denominator)
+                rq.append(numerator / denominator)
             print(f"Rayleigh quotients min/mean/max: {np.min(rq)}/{np.mean(rq)}/{np.max(rq)}")
                 
             with open(out_path, 'wb') as f:
