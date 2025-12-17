@@ -96,10 +96,10 @@ def main(config_path: Path,
                 X, Y = np.meshgrid(np.arange(nx), np.arange(ny), indexing="ij")
                 points = np.stack([X.ravel(), Y.ravel()], axis=1)  # (nx*ny, 2)
                 tri = Delaunay(points)
-                print(f"Number of vertices: {V.shape[0]}, Number of faces: {tri.simplices.shape[0]}")
-                F = tri.simplices
+                print(f"Number of faces: {tri.simplices.shape[0]}")
+                F = tri.simplices.astype(np.int64)
                 print(f"F shape: {F.shape}")
-                L = gpt.cotangent_laplacian(V, F)
+                L = gpt.cotangent_laplacian(points, F)
                 print(f"Laplacian shape: {L.shape}")
                 print(f"V shape: {V.shape}")
                 print(f"L diag: {np.diag(L)}")
