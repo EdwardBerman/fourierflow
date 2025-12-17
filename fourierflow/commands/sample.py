@@ -109,6 +109,7 @@ def main(config_path: Path,
                 rq.append(numerator / denominator)
 
                 y = batch["y"]          # <- if this KeyError’s, try batch["u"] / batch["target"]
+                print(f"y shape before moving to cpu: {y.shape}")
                 y = y.cpu().numpy()
 
                 V_gt = y[i, :, :, 0]    
