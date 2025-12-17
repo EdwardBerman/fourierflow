@@ -91,6 +91,7 @@ def main(config_path: Path,
             # for each element in batch 
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
                 V = x[i, :, :, 0].cpu().numpy().squeeze()
+                print(f"V shape before Delaunay: {V.shape}")
                 tri = Delaunay(V)
                 print(f"Number of vertices: {V.shape[0]}, Number of faces: {tri.simplices.shape[0]}")
                 F = tri.simplices
