@@ -81,7 +81,7 @@ def main(config_path: Path,
     with torch.no_grad():
         for batch in loader:
             rq = []
-            rq_gt = []
+            rq_y = []
             x = batch["x"].to(next(routine.model.parameters()).device)
             # print x shape 
             print(f"Input shape: {x.shape}")
@@ -123,7 +123,7 @@ def main(config_path: Path,
                 num = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
                 den = (V_gt.reshape(-1) ** 2).sum()
                 rq_gt = num / den
-                rq_gt.append(rq_gt)
+                rq_y.append(rq_gt)
             print(f"Rayleigh quotients mean +/- std: {np.mean(rq)} +/- {np.std(rq)}")
             print(f"Ground truth Rayleigh quotients mean +/- std: {np.mean(rq_gt)} +/- {np.std(rq_gt)}")
                 
