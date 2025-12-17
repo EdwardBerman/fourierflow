@@ -101,10 +101,8 @@ def main(config_path: Path,
                 print(f"F shape: {F.shape}")
                 L = gpt.cotangent_laplacian(points, F)
                 print(f"Laplacian shape: {L.shape}")
-                print(f"V shape: {V.shape}")
-                print(f"L diag: {np.diag(L)}")
-                numerator = V.T @ L @ V
-                denominator = np.sum(V * V)  
+                numerator = V.reshape(-1).T @ L @ V.reshape(-1)
+                denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
                 numerator_trace = np.trace(numerator)
                 rq.append(numerator_trace / denominator)
             print(f"Rayleigh quotients min/mean/max: {np.min(rq)}/{np.mean(rq)}/{np.max(rq)}")
