@@ -91,22 +91,22 @@ def main(config_path: Path,
             # for each element in batch 
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
                 V = pred[i, :, :, 0]
-                print(f"V shape before Delaunay: {V.shape}")
+                #print(f"V shape before Delaunay: {V.shape}")
                 nx, ny = V.shape
                 X, Y = np.meshgrid(np.arange(nx), np.arange(ny), indexing="ij")
                 points = np.stack([X.ravel(), Y.ravel()], axis=1)  # (nx*ny, 2)
                 tri = Delaunay(points)
-                print(f"Number of faces: {tri.simplices.shape[0]}")
+                #print(f"Number of faces: {tri.simplices.shape[0]}")
                 F = tri.simplices.astype(np.int64)
-                print(f"F shape: {F.shape}")
+                #print(f"F shape: {F.shape}")
                 L = gpt.cotangent_laplacian(points, F)
-                print(f"Laplacian shape: {L.shape}")
+                #print(f"Laplacian shape: {L.shape}")
                 numerator = V.reshape(-1).T @ L @ V.reshape(-1)
                 denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
                 #numerator_trace = np.trace(numerator)
                 #rq.append(numerator_trace / denominator)
                 rq.append(numerator / denominator)
-            print(f"Rayleigh quotients min/mean/max: {np.min(rq)}/{np.mean(rq)}/{np.max(rq)}")
+            print(f"Rayleigh quotients mean +/- std: {np.mean(rq)} +/- {np.std(rq)}")
                 
             with open(out_path, 'wb') as f:
                 pickle.dump([batch, pred], f)
