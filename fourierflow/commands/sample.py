@@ -14,6 +14,9 @@ from typer import Argument, Typer
 
 from fourierflow.utils import import_string
 
+from scipy.spatial import Delaunay
+import gpytoolbox as gpt
+
 app = Typer()
 
 
@@ -75,6 +78,7 @@ def main(config_path: Path,
     loader = builder.test_dataloader()
     with torch.no_grad():
         for batch in loader:
+            rq = []
             x = batch["x"].to(next(routine.model.parameters()).device)
             # print x shape 
             print(f"Input shape: {x.shape}")
@@ -82,6 +86,21 @@ def main(config_path: Path,
             # print pred shape
             print(f"Output shape: {pred.shape}")
             out_path = Path(config_dir) / 'sample.pkl'
+            # for each element in batch 
+            for i in range(x.shape[0]):
+                V = x[i, :, :, 0].cpu().numpy().squeeze()
+                tri = Delaunay(coordinates)
+                F = tri.simplices
+                L = gpt.cotangent_laplacian(V, F)
+                print(f"Laplacian shape: {L.shape}")
+                print(f"V shape: {V.shape}")
+                print(f"L diag: {np.diag(L)}")
+                numerator = V.T @ L @ V
+                denominator = V.T @ V
+                numerator_trace = np.trace(numerator)
+                rq.append(numerator_trace / denominator)
+            print(f"Rayleigh quotients min/mean/max: {np.min(rq)}/{np.mean(rq)}/{np.max(rq)}")
+                
             with open(out_path, 'wb') as f:
                 pickle.dump([batch, pred], f)
             break
