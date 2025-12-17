@@ -92,7 +92,9 @@ def main(config_path: Path,
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
                 V = x[i, :, :, 0].cpu().numpy().squeeze()
                 tri = Delaunay(V)
+                print(f"Number of vertices: {V.shape[0]}, Number of faces: {tri.simplices.shape[0]}")
                 F = tri.simplices
+                print(f"F shape: {F.shape}")
                 L = gpt.cotangent_laplacian(V, F)
                 print(f"Laplacian shape: {L.shape}")
                 print(f"V shape: {V.shape}")
