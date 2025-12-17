@@ -17,6 +17,8 @@ from fourierflow.utils import import_string
 from scipy.spatial import Delaunay
 import gpytoolbox as gpt
 
+from tqdm import tqdm
+
 app = Typer()
 
 
@@ -87,7 +89,7 @@ def main(config_path: Path,
             print(f"Output shape: {pred.shape}")
             out_path = Path(config_dir) / 'sample.pkl'
             # for each element in batch 
-            for i in range(x.shape[0]):
+            for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
                 V = x[i, :, :, 0].cpu().numpy().squeeze()
                 tri = Delaunay(V)
                 F = tri.simplices
