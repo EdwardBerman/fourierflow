@@ -98,7 +98,7 @@ def main(config_path: Path,
                 print(f"V shape: {V.shape}")
                 print(f"L diag: {np.diag(L)}")
                 numerator = V.T @ L @ V
-                denominator = V.T @ V
+                denominator = np.sum(V * V)  
                 numerator_trace = np.trace(numerator)
                 rq.append(numerator_trace / denominator)
             print(f"Rayleigh quotients min/mean/max: {np.min(rq)}/{np.mean(rq)}/{np.max(rq)}")
