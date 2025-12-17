@@ -81,6 +81,7 @@ def main(config_path: Path,
     with torch.no_grad():
         for batch in loader:
             rq = []
+            rq_gt = []
             x = batch["x"].to(next(routine.model.parameters()).device)
             # print x shape 
             print(f"Input shape: {x.shape}")
@@ -106,7 +107,25 @@ def main(config_path: Path,
                 #numerator_trace = np.trace(numerator)
                 #rq.append(numerator_trace / denominator)
                 rq.append(numerator / denominator)
+
+                y = batch["y"]          # <- if this KeyError’s, try batch["u"] / batch["target"]
+                y = y.cpu().numpy()
+
+                V_gt = y[i, :, :, 0]    
+                nx, ny = V_gt.shape
+
+                X, Y = np.meshgrid(np.arange(nx), np.arange(ny), indexing="ij")
+                points = np.stack([X.ravel(), Y.ravel()], axis=1)     # (nx*ny, 2)
+                tri = Delaunay(points)
+                F = tri.simplices.astype(np.int64)
+
+                L = gpt.cotangent_laplacian(points, F)
+                num = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
+                den = (V_gt.reshape(-1) ** 2).sum()
+                rq_gt = num / den
+                rq_gt.append(rq_gt)
             print(f"Rayleigh quotients mean +/- std: {np.mean(rq)} +/- {np.std(rq)}")
+            print(f"Ground truth Rayleigh quotients mean +/- std: {np.mean(rq_gt)} +/- {np.std(rq_gt)}")
                 
             with open(out_path, 'wb') as f:
                 pickle.dump([batch, pred], f)
