@@ -96,9 +96,8 @@ def main(config_path: Path,
             out_path = Path(config_dir) / 'sample.pkl'
             # for each element in batch 
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
-                V = pred[i, :, :, 0] if pred.ndim == 4 else pred[i, :, 0]
-                #print(f"V shape before Delaunay: {V.shape}")
-                if V.ndim == 2:
+                if pred.ndim == 4:
+                    V = pred[i, :, :, 0]
                     x_coords = x[i, :, :, 0].ravel()
                     y_coords = x[i, :, :, 1].ravel()
                     points = np.stack([x_coords, y_coords], axis=1)
@@ -108,7 +107,8 @@ def main(config_path: Path,
                     numerator = V.reshape(-1).T @ L @ V.reshape(-1)
                     denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
                     rq.append(numerator / denominator)
-                elif V.ndim == 1:
+                elif pred.ndim == 3:
+                    V = pred[i, :, 0]
                     points = x[i, :, :2]
                     tri = Delaunay(points.cpu().numpy())
                     F = tri.simplices.astype(np.int64)
@@ -118,6 +118,9 @@ def main(config_path: Path,
                     #numerator_trace = np.trace(numerator)
                     #rq.append(numerator_trace / denominator)
                     rq.append(numerator / denominator)
+                else:
+                    raise ValueError(f"Unexpected pred dimensions: {pred.ndim}. Expected 3D or 4D.")
+
 
                 try: 
                     y = batch["y"]          # <- if this KeyError’s, try batch["u"] / batch["target"]
