@@ -138,7 +138,6 @@ def main(config_path: Path,
                     F = np.array(F, dtype=np.int64)
                     print(f"Created {len(F)} triangles from grid")
 
-                    F = tri.simplices.astype(np.int64)
                     L = gpt.cotangent_laplacian(points.cpu().numpy(), F)
                     numerator = V.reshape(-1).T @ L @ V.reshape(-1)
                     denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
