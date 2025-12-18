@@ -129,6 +129,7 @@ def main(config_path: Path,
                     numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
                     denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
                     rq_gt = numerator_gt / (denominator_gt + 1e-8)
+                    print(f"Sample {i}: Predicted RQ = {rq[-1]}, Ground Truth RQ = {rq_gt}")
                     rq_y.append(rq_gt)
                 else:
                     raise ValueError(f"Unexpected pred dimensions: {pred.ndim}. Expected 3D or 4D.")
