@@ -116,6 +116,9 @@ def main(config_path: Path,
                 elif pred.ndim == 3:
                     V = pred[i, :, 0]
                     points = x[i, :, :2]
+                    points_unique, inverse_indices = np.unique(points.cpu().numpy(), axis=0, return_inverse=True)
+                    print(f"Unique points shape: {points_unique.shape}")
+                    breakpoint()
                     tri = Delaunay(points.cpu().numpy())
                     F = tri.simplices.astype(np.int64)
                     L = gpt.cotangent_laplacian(points.cpu().numpy(), F)
