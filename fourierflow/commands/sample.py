@@ -82,9 +82,12 @@ def main(config_path: Path,
         for batch in loader:
             rq = []
             rq_y = []
-            x = batch["x"].to(next(routine.model.parameters()).device)
-            # print x shape 
-            print(f"Input shape: {x.shape}")
+            try:
+                x = batch["x"].to(next(routine.model.parameters()).device)
+                # print x shape 
+                print(f"Input shape: {x.shape}")
+            except:
+                print(batch.keys())
             pred = routine.model.forward(x).cpu().numpy()
             # print pred shape
             print(f"Output shape: {pred.shape}")
