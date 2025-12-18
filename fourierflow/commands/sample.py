@@ -93,7 +93,6 @@ def main(config_path: Path,
                 pred = routine.model.forward(x).cpu().numpy()
             # print pred shape
             print(f"Output shape: {pred.shape}")
-            breakpoint()
             out_path = Path(config_dir) / 'sample.pkl'
             # for each element in batch 
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
@@ -117,9 +116,6 @@ def main(config_path: Path,
                 elif pred.ndim == 3:
                     V = pred[i, :, 0]
                     points = x[i, :, :2]
-                    print(f"Points shape: {points.shape}")
-                    print(points)
-                    breakpoint()
                     tri = Delaunay(points.cpu().numpy())
                     F = tri.simplices.astype(np.int64)
                     L = gpt.cotangent_laplacian(points.cpu().numpy(), F)
