@@ -98,8 +98,8 @@ def main(config_path: Path,
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
                 if pred.ndim == 4:
                     V = pred[i, :, :, 0]
-                    x_coords = x[i, :, :, 0].ravel()
-                    y_coords = x[i, :, :, 1].ravel()
+                    x_coords = x[i, :, :, 0].cpu().numpy().ravel()
+                    y_coords = x[i, :, :, 1].cpu().numpy().ravel()
                     points = np.stack([x_coords, y_coords], axis=1)
                     tri = Delaunay(points.cpu().numpy())
                     F = tri.simplices.astype(np.int64)
