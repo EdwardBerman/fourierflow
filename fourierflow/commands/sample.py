@@ -117,12 +117,10 @@ def main(config_path: Path,
                     V = pred[i, :, 0]
                     points = x[i, :, :2]
                     points_unique, inverse_indices = np.unique(points.cpu().numpy(), axis=0, return_inverse=True)
-                    print(f"Unique points shape: {points_unique.shape}")
-                    tri = Delaunay(points.cpu().numpy())
 
                     n_points = len(points)
-                    x_unique = np.unique(points[:, 0])
-                    y_unique = np.unique(points[:, 1])
+                    x_unique = np.unique(points[:, 0].cpu().numpy())
+                    y_unique = np.unique(points[:, 1].cpu().numpy())
                     nx, ny = len(x_unique), len(y_unique)
                     if nx * ny != n_points:
                         print(f"Warning: Grid detection failed ({nx}x{ny}={nx*ny} != {n_points})")
