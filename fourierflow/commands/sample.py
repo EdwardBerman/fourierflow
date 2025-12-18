@@ -108,6 +108,12 @@ def main(config_path: Path,
                     numerator = V.reshape(-1).T @ L @ V.reshape(-1)
                     denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
                     rq.append(numerator / denominator)
+                    y = batch["y"]
+                    V_gt = y[i, :, :, 0]
+                    numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
+                    denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
+                    rq_gt = numerator_gt / denominator_gt
+                    rq_y.append(rq_gt)
                 elif pred.ndim == 3:
                     V = pred[i, :, 0]
                     points = x[i, :, :2]
@@ -122,6 +128,12 @@ def main(config_path: Path,
                     #numerator_trace = np.trace(numerator)
                     #rq.append(numerator_trace / denominator)
                     rq.append(numerator / denominator)
+                    y = batch["sigma"]
+                    V_gt = y[i, :, 0]
+                    numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
+                    denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
+                    rq_gt = numerator_gt / denominator_gt
+                    rq_y.append(rq_gt)
                 else:
                     raise ValueError(f"Unexpected pred dimensions: {pred.ndim}. Expected 3D or 4D.")
 
@@ -135,16 +147,6 @@ def main(config_path: Path,
                 V_gt = y[i, :, :]    
                 nx, ny = V_gt.shape
 
-                X, Y = np.meshgrid(np.arange(nx), np.arange(ny), indexing="ij")
-                points = np.stack([X.ravel(), Y.ravel()], axis=1)     # (nx*ny, 2)
-                tri = Delaunay(points)
-                F = tri.simplices.astype(np.int64)
-
-                L = gpt.cotangent_laplacian(points, F)
-                num = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
-                den = (V_gt.reshape(-1) ** 2).sum()
-                rq_gt = num / den
-                rq_y.append(rq_gt)
             print(f"Rayleigh quotients mean +/- std: {np.mean(rq)} +/- {np.std(rq)}")
             print(f"Ground truth Rayleigh quotients mean +/- std: {np.mean(rq_gt)} +/- {np.std(rq_gt)}")
                 
