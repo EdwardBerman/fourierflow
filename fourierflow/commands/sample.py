@@ -96,24 +96,33 @@ def main(config_path: Path,
             out_path = Path(config_dir) / 'sample.pkl'
             # for each element in batch 
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
-                V = pred[i, :, :, 0]
+                V = pred[i, :, :, 0] if pred.ndim == 4 else pred[i, :, 0]
                 #print(f"V shape before Delaunay: {V.shape}")
-                nx, ny = V.shape
-                X, Y = np.meshgrid(np.arange(nx), np.arange(ny), indexing="ij")
-                points = np.stack([X.ravel(), Y.ravel()], axis=1)  # (nx*ny, 2)
-                tri = Delaunay(points)
-                #print(f"Number of faces: {tri.simplices.shape[0]}")
-                F = tri.simplices.astype(np.int64)
-                #print(f"F shape: {F.shape}")
-                L = gpt.cotangent_laplacian(points, F)
-                #print(f"Laplacian shape: {L.shape}")
-                numerator = V.reshape(-1).T @ L @ V.reshape(-1)
-                denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
-                #numerator_trace = np.trace(numerator)
-                #rq.append(numerator_trace / denominator)
-                rq.append(numerator / denominator)
+                if V.ndim == 2:
+                    x_coords = input_data[i, :, :, 0].ravel()
+                    y_coords = input_data[i, :, :, 1].ravel()
+                    points = np.stack([x_coords, y_coords], axis=1)
+                    tri = Delaunay(points)
+                    F = tri.simplices.astype(np.int64)
+                    L = gpt.cotangent_laplacian(points, F)
+                    numerator = V.reshape(-1).T @ L @ V.reshape(-1)
+                    denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
+                    rq.append(numerator / denominator)
+                elif V.ndim == 1:
+                    points = input_data[i, :, :2]
+                    tri = Delaunay(points)
+                    F = tri.simplices.astype(np.int64)
+                    L = gpt.cotangent_laplacian(points, F)
+                    numerator = V.reshape(-1).T @ L @ V.reshape(-1)
+                    denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
+                    #numerator_trace = np.trace(numerator)
+                    #rq.append(numerator_trace / denominator)
+                    rq.append(numerator / denominator)
 
-                y = batch["y"]          # <- if this KeyError’s, try batch["u"] / batch["target"]
+                try: 
+                    y = batch["y"]          # <- if this KeyError’s, try batch["u"] / batch["target"]
+                except:
+                    y = batch["sigma"]
                 y = y.cpu().numpy()
 
                 V_gt = y[i, :, :]    
