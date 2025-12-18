@@ -118,8 +118,33 @@ def main(config_path: Path,
                     points = x[i, :, :2]
                     points_unique, inverse_indices = np.unique(points.cpu().numpy(), axis=0, return_inverse=True)
                     print(f"Unique points shape: {points_unique.shape}")
-                    breakpoint()
                     tri = Delaunay(points.cpu().numpy())
+
+                    n_points = len(points)
+                    x_unique = np.unique(points[:, 0])
+                    y_unique = np.unique(points[:, 1])
+                    nx, ny = len(x_unique), len(y_unique)
+                    if nx * ny != n_points:
+                        print(f"Warning: Grid detection failed ({nx}x{ny}={nx*ny} != {n_points})")
+                        tri = Delaunay(points)
+                        F = tri.simplices.astype(np.int64)
+                    else:
+                        print(f"Detected {nx}x{ny} grid structure")
+                        F = []
+                        for i in range(ny - 1):
+                            for j in range(nx - 1):
+                                # Two triangles per grid cell
+                                v0 = i * nx + j
+                                v1 = i * nx + (j + 1)
+                                v2 = (i + 1) * nx + j
+                                v3 = (i + 1) * nx + (j + 1)
+                                
+                                F.append([v0, v1, v2])
+                                F.append([v1, v3, v2])
+                    
+                    F = np.array(F, dtype=np.int64)
+                    print(f"Created {len(F)} triangles from grid")
+
                     F = tri.simplices.astype(np.int64)
                     L = gpt.cotangent_laplacian(points.cpu().numpy(), F)
                     numerator = V.reshape(-1).T @ L @ V.reshape(-1)
