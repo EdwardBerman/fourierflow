@@ -99,8 +99,8 @@ def main(config_path: Path,
                 V = pred[i, :, :, 0] if pred.ndim == 4 else pred[i, :, 0]
                 #print(f"V shape before Delaunay: {V.shape}")
                 if V.ndim == 2:
-                    x_coords = input_data[i, :, :, 0].ravel()
-                    y_coords = input_data[i, :, :, 1].ravel()
+                    x_coords = x[i, :, :, 0].ravel()
+                    y_coords = x[i, :, :, 1].ravel()
                     points = np.stack([x_coords, y_coords], axis=1)
                     tri = Delaunay(points)
                     F = tri.simplices.astype(np.int64)
@@ -109,7 +109,7 @@ def main(config_path: Path,
                     denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
                     rq.append(numerator / denominator)
                 elif V.ndim == 1:
-                    points = input_data[i, :, :2]
+                    points = x[i, :, :2]
                     tri = Delaunay(points)
                     F = tri.simplices.astype(np.int64)
                     L = gpt.cotangent_laplacian(points, F)
