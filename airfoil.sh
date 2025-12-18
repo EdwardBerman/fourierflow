@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export WANDB_MODE=online
+
 python -m fourierflow.commands train --trial 0 experiments/airfoil/ffno/4_layers/config.yaml
 python -m fourierflow.commands train --trial 0 experiments/airfoil/ffno/8_layers/config.yaml
 python -m fourierflow.commands train --trial 0 experiments/airfoil/ffno/12_layers/config.yaml

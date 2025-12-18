@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export WANDB_MODE=online
+
 python -m fourierflow.commands train --trial 0 experiments/plasticity/ffno/4_layers/config.yaml
 python -m fourierflow.commands train --trial 0 experiments/plasticity/ffno/8_layers/config.yaml
 python -m fourierflow.commands train --trial 0 experiments/plasticity/ffno/12_layers/config.yaml
