@@ -128,7 +128,7 @@ def main(config_path: Path,
                     V_gt = y[i, :, 0].cpu().numpy()
                     numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
                     denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
-                    rq_gt = numerator_gt / denominator_gt
+                    rq_gt = numerator_gt / (denominator_gt + 1e-8)
                     rq_y.append(rq_gt)
                 else:
                     raise ValueError(f"Unexpected pred dimensions: {pred.ndim}. Expected 3D or 4D.")
