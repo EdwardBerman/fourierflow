@@ -82,16 +82,11 @@ def main(config_path: Path,
         for batch in loader:
             rq = []
             rq_y = []
-            try:
-                x = batch["x"].to(next(routine.model.parameters()).device)
-                # print x shape 
-                print(f"Input shape: {x.shape}")
-                pred = routine.model.forward(x).cpu().numpy()
-            except:
-                x = batch["xy"].to(next(routine.model.parameters()).device)
-                print(f"Input shape: {x.shape}")
-                pred = routine.model.forward(x).cpu().numpy()
-            # print batch keys 
+            x = batch["x"].to(next(routine.model.parameters()).device)
+            # print x shape 
+            print(f"Input shape: {x.shape}")
+            breakpoint()
+            pred = routine.model.forward(x).cpu().numpy()
             print(f"Batch keys: {list(batch.keys())}")
             # print pred shape
             print(f"Output shape: {pred.shape}")
