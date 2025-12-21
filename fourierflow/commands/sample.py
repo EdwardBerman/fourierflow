@@ -82,16 +82,10 @@ def main(config_path: Path,
         for batch in loader:
             rq = []
             rq_y = []
-            try:
-                x = batch["x"].to(next(routine.model.parameters()).device)
-                # print x shape 
-                print(f"Input shape: {x.shape}")
-                pred = routine.model.forward(x).cpu().numpy()
-            except:
-                x = batch["xy"].to(next(routine.model.parameters()).device)
-                print(f"Input shape: {x.shape}")
-                pred = routine.model.forward(x).cpu().numpy()
-            # print batch keys 
+            x = batch["x"].to(next(routine.model.parameters()).device)
+            # print x shape 
+            print(f"Input shape: {x.shape}")
+            pred = routine.model.forward(x).cpu().numpy()
             print(f"Batch keys: {list(batch.keys())}")
             # print pred shape
             print(f"Output shape: {pred.shape}")
@@ -115,44 +109,35 @@ def main(config_path: Path,
                     denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
                     rq_gt = numerator_gt / denominator_gt
                     rq_y.append(rq_gt)
-                elif pred.ndim == 3:
-                    V = pred[i, :, 0]
-                    points = x[i, :, :2]
-                    points_unique, inverse_indices = np.unique(points.cpu().numpy(), axis=0, return_inverse=True)
+                elif pred.ndim == 5:
+                    # j = timestep = 4th index in prediction 
+                    for j in range(pred.shape[3]):
+                        nx, ny = x.shape[1], x.shape[2]  # 101, 31
+                        xs = np.arange(nx, dtype=np.float64)
+                        ys = np.arange(ny, dtype=np.float64)
+                        Xg, Yg = np.meshgrid(xs, ys, indexing="ij")  # (nx, ny)
 
-                    n_points = len(points)
-                    x_unique = np.unique(points[:, 0].cpu().numpy())
-                    y_unique = np.unique(points[:, 1].cpu().numpy())
-                    nx, ny = len(x_unique), len(y_unique)
-                    
-                    F = []
-                    for i in range(ny - 1):
-                        for j in range(nx - 1):
-                            # Two triangles per grid cell
-                            v0 = i * nx + j
-                            v1 = i * nx + (j + 1)
-                            v2 = (i + 1) * nx + j
-                            v3 = (i + 1) * nx + (j + 1)
-                            
-                            F.append([v0, v1, v2])
-                            F.append([v1, v3, v2])
-                    
-                    F = np.array(F, dtype=np.int64)
-                    print(f"Created {len(F)} triangles from grid")
+                        points = np.stack([Xg.ravel(), Yg.ravel()], axis=1)
+                        y = batch["y"]
+                        tri = Delaunay(points)
+                        F = tri.simplices.astype(np.int64)
+                        L = gpt.cotangent_laplacian(points, F)
 
-                    L = gpt.cotangent_laplacian(points.cpu().numpy(), F)
-                    numerator = V.reshape(-1).T @ L @ V.reshape(-1)
-                    denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
-                    #numerator_trace = np.trace(numerator)
-                    #rq.append(numerator_trace / denominator)
-                    rq.append(numerator / denominator)
-                    y = batch["sigma"]
-                    V_gt = y[i, :, 0].cpu().numpy()
-                    numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
-                    denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
-                    rq_gt = numerator_gt / (denominator_gt + 1e-8)
-                    print(f"Sample {i}: Predicted RQ = {rq[-1]}, Ground Truth RQ = {rq_gt}")
-                    rq_y.append(rq_gt)
+
+                        V = pred[i, :, :, j, :]                  # (X, Y, C)
+                        V2 = V.reshape(-1, V.shape[-1])          # (N, C)
+
+                        numerator = np.trace(V2.T @ (L @ V2))
+                        denominator = np.sum(V2 * V2)  
+                        rq.append(numerator / denominator)
+
+
+                        V_gt = y[i, :, :, j, :].cpu().numpy()    # (X, Y)
+                        V_gt = V_gt.reshape(-1, V_gt.shape[-1])    # (N, C)
+                        numerator_gt = np.trace(V_gt.T @ (L @ V_gt))
+                        denominator_gt = np.sum(V_gt * V_gt)
+                        rq_gt = numerator_gt / denominator_gt
+                        rq_y.append(rq_gt)
                 else:
                     raise ValueError(f"Unexpected pred dimensions: {pred.ndim}. Expected 3D or 4D.")
 
