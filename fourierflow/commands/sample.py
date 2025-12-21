@@ -114,29 +114,30 @@ def main(config_path: Path,
                 elif pred.ndim == 5:
                     # j = timestep = 4th index in prediction 
                     for j in range(pred.shape[3]):
-                        x_coords = x[i, :, :, 0].cpu().numpy().ravel()
-                        y_coords = x[i, :, :, 1].cpu().numpy().ravel()
+                        nx, ny = x.shape[1], x.shape[2]  # 101, 31
+                        xs = np.arange(nx, dtype=np.float64)
+                        ys = np.arange(ny, dtype=np.float64)
+                        Xg, Yg = np.meshgrid(xs, ys, indexing="ij")  # (nx, ny)
+
+                        points = np.stack([Xg.ravel(), Yg.ravel()], axis=1)
                         y = batch["y"]
-                        print(f"y shape: {y.shape}")
-                        breakpoint()
-                        points = np.stack([x_coords, y_coords], axis=1)
                         tri = Delaunay(points)
                         F = tri.simplices.astype(np.int64)
                         L = gpt.cotangent_laplacian(points, F)
 
 
-                        for j in range(pred.shape[3]):
-                            V = pred[i, :, :, j, :]                  # (X, Y, C)
-                            V2 = V.reshape(-1, V.shape[-1])          # (N, C)
+                        V = pred[i, :, :, j, :]                  # (X, Y, C)
+                        V2 = V.reshape(-1, V.shape[-1])          # (N, C)
 
-                            numerator = np.trace(V2.T @ (L @ V2))
-                            denominator = np.sum(V2 * V2)  
-                            rq.append(numerator / denominator)
+                        numerator = np.trace(V2.T @ (L @ V2))
+                        denominator = np.sum(V2 * V2)  
+                        rq.append(numerator / denominator)
 
 
-                        V_gt = y[i, :, :].cpu().numpy()
-                        numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
-                        denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
+                        V_gt = y[i, :, :, j, :].cpu().numpy()    # (X, Y)
+                        V_gt = V_gt.reshape(-1, V_gt.shape[-1])    # (N, C)
+                        numerator_gt = V_gt.T @ (L @ V_gt)
+                        denominator_gt = np.sum(V_gt * V_gt)
                         rq_gt = numerator_gt / denominator_gt
                         rq_y.append(rq_gt)
                 else:
