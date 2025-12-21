@@ -91,6 +91,8 @@ def main(config_path: Path,
                 x = batch["xy"].to(next(routine.model.parameters()).device)
                 print(f"Input shape: {x.shape}")
                 pred = routine.model.forward(x).cpu().numpy()
+            # print batch keys 
+            print(f"Batch keys: {list(batch.keys())}")
             # print pred shape
             print(f"Output shape: {pred.shape}")
             out_path = Path(config_dir) / 'sample.pkl'
