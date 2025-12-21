@@ -90,6 +90,7 @@ def main(config_path: Path,
             print(f"Batch keys: {list(batch.keys())}")
             # print pred shape
             print(f"Output shape: {pred.shape}")
+            breakpoint()
             out_path = Path(config_dir) / 'sample.pkl'
             # for each element in batch 
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
@@ -110,44 +111,26 @@ def main(config_path: Path,
                     denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
                     rq_gt = numerator_gt / denominator_gt
                     rq_y.append(rq_gt)
-                elif pred.ndim == 3:
-                    V = pred[i, :, 0]
-                    points = x[i, :, :2]
-                    points_unique, inverse_indices = np.unique(points.cpu().numpy(), axis=0, return_inverse=True)
-
-                    n_points = len(points)
-                    x_unique = np.unique(points[:, 0].cpu().numpy())
-                    y_unique = np.unique(points[:, 1].cpu().numpy())
-                    nx, ny = len(x_unique), len(y_unique)
-                    
-                    F = []
-                    for i in range(ny - 1):
-                        for j in range(nx - 1):
-                            # Two triangles per grid cell
-                            v0 = i * nx + j
-                            v1 = i * nx + (j + 1)
-                            v2 = (i + 1) * nx + j
-                            v3 = (i + 1) * nx + (j + 1)
-                            
-                            F.append([v0, v1, v2])
-                            F.append([v1, v3, v2])
-                    
-                    F = np.array(F, dtype=np.int64)
-                    print(f"Created {len(F)} triangles from grid")
-
-                    L = gpt.cotangent_laplacian(points.cpu().numpy(), F)
-                    numerator = V.reshape(-1).T @ L @ V.reshape(-1)
-                    denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
-                    #numerator_trace = np.trace(numerator)
-                    #rq.append(numerator_trace / denominator)
-                    rq.append(numerator / denominator)
-                    y = batch["sigma"]
-                    V_gt = y[i, :, 0].cpu().numpy()
-                    numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
-                    denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
-                    rq_gt = numerator_gt / (denominator_gt + 1e-8)
-                    print(f"Sample {i}: Predicted RQ = {rq[-1]}, Ground Truth RQ = {rq_gt}")
-                    rq_y.append(rq_gt)
+                elif pred.ndim == 5:
+                    # j = timestep = 4th index in prediction 
+                    for j in range(pred.shape[1]):
+                        V = pred[i, :, :, :, 0]
+                        x_coords = x[i, :, :, :, 0].cpu().numpy().ravel()
+                        y_coords = x[i, :, :, :, 1].cpu().numpy().ravel()
+                        z_coords = x[i, :, :, :, 2].cpu().numpy().ravel()
+                        points = np.stack([x_coords, y_coords, z_coords], axis=1)
+                        tri = Delaunay(points)
+                        F = tri.simplices.astype(np.int64)
+                        L = gpt.cotangent_laplacian(points, F)
+                        numerator = V.reshape(-1).T @ L @ V.reshape(-1)
+                        denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
+                        rq.append(numerator / denominator)
+                        y = batch["y"]
+                        V_gt = y[i, :, :].cpu().numpy()
+                        numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
+                        denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
+                        rq_gt = numerator_gt / denominator_gt
+                        rq_y.append(rq_gt)
                 else:
                     raise ValueError(f"Unexpected pred dimensions: {pred.ndim}. Expected 3D or 4D.")
 
