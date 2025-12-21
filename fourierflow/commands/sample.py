@@ -85,12 +85,10 @@ def main(config_path: Path,
             x = batch["x"].to(next(routine.model.parameters()).device)
             # print x shape 
             print(f"Input shape: {x.shape}")
-            breakpoint()
             pred = routine.model.forward(x).cpu().numpy()
             print(f"Batch keys: {list(batch.keys())}")
             # print pred shape
             print(f"Output shape: {pred.shape}")
-            breakpoint()
             out_path = Path(config_dir) / 'sample.pkl'
             # for each element in batch 
             for i in tqdm(range(x.shape[0]), desc="Computing Rayleigh quotients"):
