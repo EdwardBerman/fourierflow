@@ -116,12 +116,14 @@ def main(config_path: Path,
                     for j in range(pred.shape[3]):
                         x_coords = x[i, :, :, 0].cpu().numpy().ravel()
                         y_coords = x[i, :, :, 1].cpu().numpy().ravel()
+                        y = batch["y"]
+                        print(f"y shape: {y.shape}")
+                        breakpoint()
                         points = np.stack([x_coords, y_coords], axis=1)
                         tri = Delaunay(points)
                         F = tri.simplices.astype(np.int64)
                         L = gpt.cotangent_laplacian(points, F)
 
-                        y = batch["y"]
 
                         for j in range(pred.shape[3]):
                             V = pred[i, :, :, j, :]                  # (X, Y, C)
@@ -131,9 +133,6 @@ def main(config_path: Path,
                             denominator = np.sum(V2 * V2)  
                             rq.append(numerator / denominator)
 
-                        print(f"y shape: {y.shape}")
-
-                        breakpoint()
 
                         V_gt = y[i, :, :].cpu().numpy()
                         numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
