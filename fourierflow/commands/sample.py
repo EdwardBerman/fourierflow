@@ -108,7 +108,7 @@ def main(config_path: Path,
                     denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
                     rq.append(numerator / denominator)
                     y = batch["y"]
-                    V_gt = y[i, :, :, 0].cpu().numpy()
+                    V_gt = y[i, :, :].cpu().numpy()
                     numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
                     denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
                     rq_gt = numerator_gt / denominator_gt
@@ -161,7 +161,6 @@ def main(config_path: Path,
                     y = batch["sigma"]
                 y = y.cpu().numpy()
 
-                V_gt = y[i, :, :]    
                 nx, ny = V_gt.shape
 
             print(f"Rayleigh quotients mean +/- std: {np.mean(rq)} +/- {np.std(rq)}")
