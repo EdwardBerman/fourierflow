@@ -134,7 +134,7 @@ def main(config_path: Path,
 
                         V_gt = y[i, :, :, j, :].cpu().numpy()    # (X, Y)
                         V_gt = V_gt.reshape(-1, V_gt.shape[-1])    # (N, C)
-                        numerator_gt = V_gt.T @ (L @ V_gt)
+                        numerator_gt = np.trace(V_gt.T @ (L @ V_gt))
                         denominator_gt = np.sum(V_gt * V_gt)
                         rq_gt = numerator_gt / denominator_gt
                         rq_y.append(rq_gt)
