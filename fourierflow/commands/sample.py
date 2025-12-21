@@ -113,19 +113,26 @@ def main(config_path: Path,
                     rq_y.append(rq_gt)
                 elif pred.ndim == 5:
                     # j = timestep = 4th index in prediction 
-                    for j in range(pred.shape[1]):
-                        V = pred[i, :, :, :, 0]
-                        x_coords = x[i, :, :, :, 0].cpu().numpy().ravel()
-                        y_coords = x[i, :, :, :, 1].cpu().numpy().ravel()
-                        z_coords = x[i, :, :, :, 2].cpu().numpy().ravel()
-                        points = np.stack([x_coords, y_coords, z_coords], axis=1)
+                    for j in range(pred.shape[3]):
+                        x_coords = x[i, :, :, 0].cpu().numpy().ravel()
+                        y_coords = x[i, :, :, 1].cpu().numpy().ravel()
+                        points = np.stack([x_coords, y_coords], axis=1)
                         tri = Delaunay(points)
                         F = tri.simplices.astype(np.int64)
                         L = gpt.cotangent_laplacian(points, F)
-                        numerator = V.reshape(-1).T @ L @ V.reshape(-1)
-                        denominator = np.sum(V.reshape(-1) * V.reshape(-1))  
-                        rq.append(numerator / denominator)
+
                         y = batch["y"]
+
+                        for j in range(pred.shape[3]):
+                            V = pred[i, :, :, j, :]                  # (X, Y, C)
+                            V2 = V.reshape(-1, V.shape[-1])          # (N, C)
+
+                            numerator = np.trace(V2.T @ (L @ V2))
+                            denominator = np.sum(V2 * V2)  
+                            rq.append(numerator / denominator)
+
+                        breakpoint()
+
                         V_gt = y[i, :, :].cpu().numpy()
                         numerator_gt = V_gt.reshape(-1).T @ L @ V_gt.reshape(-1)
                         denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
