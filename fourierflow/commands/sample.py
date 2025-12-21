@@ -166,9 +166,9 @@ def main(config_path: Path,
             print(f"Rayleigh quotients mean +/- std: {np.mean(rq)} +/- {np.std(rq)}")
             print(f"Ground truth Rayleigh quotients mean +/- std: {np.mean(rq_gt)} +/- {np.std(rq_gt)}")
 
-            relative_rq_error = np.array(rq) - np.array(rq_y) / (np.array(rq_y) + 1e-8)
+            rq_error = np.array(rq) - np.array(rq_y) 
 
-            print(f"Relative Rayleigh quotient error mean +/- std: {np.mean(relative_rq_error)} +/- {np.std(relative_rq_error)}")
+            print(f"Rayleigh quotient error mean +/- std: {np.mean(rq_error)} +/- {np.std(rq_error)}")
                 
             with open(out_path, 'wb') as f:
                 pickle.dump([batch, pred], f)
