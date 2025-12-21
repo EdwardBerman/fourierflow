@@ -131,6 +131,8 @@ def main(config_path: Path,
                             denominator = np.sum(V2 * V2)  
                             rq.append(numerator / denominator)
 
+                        print(f"y shape: {y.shape}")
+
                         breakpoint()
 
                         V_gt = y[i, :, :].cpu().numpy()
