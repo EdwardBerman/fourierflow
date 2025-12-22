@@ -109,7 +109,9 @@ def main(config_path: Path,
                     denominator_gt = np.sum(V_gt.reshape(-1) * V_gt.reshape(-1))
                     rq_gt = numerator_gt / denominator_gt
                     rq_y.append(rq_gt)
+                    g = 1
                 elif pred.ndim == 5:
+                    g = 0
                     # j = timestep = 4th index in prediction 
                     for j in range(pred.shape[3]):
                         nx, ny = x.shape[1], x.shape[2]  # 101, 31
@@ -153,7 +155,7 @@ def main(config_path: Path,
             print(f"Rayleigh quotients mean +/- std: {np.mean(rq)} +/- {np.std(rq)}")
             print(f"Ground truth Rayleigh quotients mean +/- std: {np.mean(rq_gt)} +/- {np.std(rq_gt)}")
 
-            rq_error = np.array(rq) - np.array(rq_y) 
+            rq_error = np.abs(np.array(rq) - np.array(rq_y) )
 
             print(f"Rayleigh quotient error mean +/- std: {np.mean(rq_error)} +/- {np.std(rq_error)}")
                 
